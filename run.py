@@ -103,7 +103,7 @@ with open('channels.txt') as f:
         if cleaned_line:  # Ensure line isn't empty
             streamers.append(cleaned_line)
 
-if twitch_miner.username.lower() == "ken_miles9067":
+if twitch_miner.username.lower() == "ken_miles9067" and 'caseoh_' in streamers:
     streamers.remove('caseoh_')
 
 streamer_list = [Streamer(x, settings=streamer_settings) for x in streamers]
