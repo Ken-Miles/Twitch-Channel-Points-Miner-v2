@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 from colorama import Fore
 from TwitchChannelPointsMiner import TwitchChannelPointsMiner
 from TwitchChannelPointsMiner.logger import LoggerSettings, ColorPalette
@@ -11,6 +10,7 @@ from TwitchChannelPointsMiner.classes.Telegram import Telegram
 from TwitchChannelPointsMiner.classes.Settings import Priority, Events, FollowersOrder
 from TwitchChannelPointsMiner.classes.entities.Bet import Strategy, BetSettings, Condition, OutcomeKeys, FilterCondition, DelayMode
 from TwitchChannelPointsMiner.classes.entities.Streamer import Streamer, StreamerSettings
+import environ
 
 streamer_settings = StreamerSettings(
         make_predictions=True,                  # If you want to Bet / Make prediction
@@ -35,11 +35,19 @@ streamer_settings = StreamerSettings(
         )
 )
 
-with open('current_user.txt') as f:
-    user = f.readlines()[0].strip()
+env = environ.Env(
+    current_user=str,
+    post=(int, 4550),
+)
+
+user = env('current_user')
+if not user:
+    raise ValueError("Must specify a current_user in env vars")
+
+port = env('port')
 
 twitch_miner = TwitchChannelPointsMiner(
-    username=user,
+    username=str(user),
 
     claim_drops_startup=True,                  # If you want to auto claim all drops from Twitch inventory on the startup
     priority=[                                  # Custom priority in this case for example:
@@ -82,7 +90,7 @@ twitch_miner = TwitchChannelPointsMiner(
 # For example, if in the mine function you don't provide any value for 'make_prediction' but you have set it on TwitchChannelPointsMiner instance, the script will take the value from here.
 # If you haven't set any value even in the instance the default one will be used
 
-twitch_miner.analytics(host="127.0.0.1", port=4550, refresh=5, days_ago=7)   # Analytics web-server
+twitch_miner.analytics(host="127.0.0.1", port=int(port), refresh=5, days_ago=7)   # Analytics web-server
 
 streamers = []
 
