@@ -37,7 +37,7 @@ streamer_settings = StreamerSettings(
 
 env = environ.Env(
     current_user=str,
-    post=(int, 4550),
+    port=(int, 4550),
     discord_webhook=str,
 )
 
