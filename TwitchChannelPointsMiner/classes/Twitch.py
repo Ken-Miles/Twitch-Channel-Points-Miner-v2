@@ -17,11 +17,12 @@ import validators
 
 from pathlib import Path
 from secrets import choice, token_hex
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 # from urllib.parse import quote
 # from base64 import urlsafe_b64decode
 # from datetime import datetime
 
+from TwitchChannelPointsMiner.classes.entities.Streamer import Streamer
 from TwitchChannelPointsMiner.classes.entities.Campaign import Campaign
 from TwitchChannelPointsMiner.classes.entities.CommunityGoal import CommunityGoal
 from TwitchChannelPointsMiner.classes.entities.Drop import Drop
@@ -64,6 +65,7 @@ class Twitch(object):
         "client_session",
         "client_version",
         "twilight_build_id_pattern",
+        "_follower_cache",
     ]
 
     def __init__(self, username, user_agent, password=None):
@@ -85,6 +87,7 @@ class Twitch(object):
         self.twilight_build_id_pattern = re.compile(
             r'window\.__twilightBuildID\s*=\s*"([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"'
         )
+        self._follower_cache = None
 
     def login(self):
         if not os.path.isfile(self.cookies_file):
@@ -212,14 +215,29 @@ class Twitch(object):
     def get_followers(
         self, limit: int = 100, order: FollowersOrder = FollowersOrder.ASC
     ):
+        """
+        Fetches followers for the user, using a cached list if available.
+
+        Parameters:
+            limit (int): Maximum number of followers to fetch.
+            order (FollowersOrder): The order in which followers should be retrieved.
+
+        Returns:
+            list: A list of follower usernames.
+        """
+        if self._follower_cache is not None:
+            return self._follower_cache
+
         json_data = copy.deepcopy(GQLOperations.ChannelFollows)
         json_data["variables"] = {"limit": limit, "order": str(order)}
         has_next = True
         last_cursor = ""
         follows = []
-        while has_next is True:
+
+        while has_next:
             json_data["variables"]["cursor"] = last_cursor
             json_response = self.post_gql_request(json_data)
+
             try:
                 follows_response = json_response["data"]["user"]["follows"]
                 last_cursor = None
@@ -230,7 +248,61 @@ class Twitch(object):
                 has_next = follows_response["pageInfo"]["hasNextPage"]
             except KeyError:
                 return []
+
+        self._follower_cache = follows  # Cache the fetched followers
         return follows
+
+    def follow_user(self, streamer: Streamer) -> Optional[bool]:
+        """
+        Follows a Twitch user by their user ID if not already followed.
+
+        Parameters:
+            user_id (str): The ID of the user to follow.
+
+        Returns:
+            Optional[bool]: True if followed, None if already followed, False if failed.
+        """
+        # Check if the user is already being followed
+        try:
+            current_following = self.get_followers()
+            if current_following is None:
+                logger.error("get_followers() returned None. Cannot check follow status.")
+                return False
+
+            if streamer.username.lower() in current_following:
+                #logger.info(f"User {streamer} is already followed.")
+                return None
+                #return {"success": True, "message": f"User {streamer} is already followed."}
+        except Exception as e:
+            logger.error(f"Error checking follow status for {streamer}: {e}")
+            return False
+
+        # Perform the follow action with valid disableNotifications
+        json_data = {
+            "operationName": "FollowUser",
+            "variables": {
+                "input": {
+                    "targetID": streamer.channel_id,
+                    "disableNotifications": False  # Ensure a valid boolean is passed
+                }
+            },
+            "query": """
+                mutation FollowUser($input: FollowUserInput!) {
+                    followUser(input: $input) {
+                        __typename
+                    }
+                }
+            """
+        }
+
+        response = self.post_gql_request(json_data)
+        if "errors" in response:
+            logger.error(f"Failed to follow user {streamer}: {response['errors']}")
+            return False
+        else:
+            logger.info(f"Successfully followed user {streamer}")
+            return True
+
 
     def update_raid(self, streamer, raid):
         if streamer.raid != raid:

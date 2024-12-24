@@ -141,7 +141,7 @@ cython_debug/
 .idea/
 
 # Custom files
-run.py
+#run.py
 chromedriver*
 
 # Folders
@@ -155,3 +155,5 @@ analytics/*
 keep_replit_alive.py
 .replit
 replit.nix
+
+current_user.txt
