@@ -38,6 +38,7 @@ streamer_settings = StreamerSettings(
 env = environ.Env(
     current_user=str,
     post=(int, 4550),
+    discord_webhook=str,
 )
 
 user = env('current_user')
@@ -45,6 +46,7 @@ if not user:
     raise ValueError("Must specify a current_user in env vars")
 
 port = env('port')
+discord_webhook = env('discord_webhook')
 
 twitch_miner = TwitchChannelPointsMiner(
     username=str(user),
@@ -73,10 +75,10 @@ twitch_miner = TwitchChannelPointsMiner(
         #    events=[Events.STREAMER_ONLINE, Events.STREAMER_OFFLINE, "BET_LOSE"],   # Only these events will be sent to the chat
         #    disable_notification=True,                                              # Revoke the notification (sound/vibration)
         #),
-        # discord=Discord(
-        #     webhook_api="https://canary.discord.com/api/webhooks/1204204784828284948/MYVF-6e46lqajF9NKi8JQa6dzuXNm6apTOEwdmp1dG4WgSdEnypKfor_-9eovOSvkpsn",  # Discord Webhook URL
-        #     events=[Events.STREAMER_ONLINE, Events.STREAMER_OFFLINE, Events.BET_WIN, Events.BET_REFUND, Events.BET_START, Events.BET_FAILED, Events.BET_LOSE, Events.CHAT_MENTION],       # Only these events will be sent to the chat
-        # )
+        discord=Discord(
+            webhook_api=str(discord_webhook),  # Discord Webhook URL
+            events=[Events.STREAMER_ONLINE, Events.STREAMER_OFFLINE, Events.BET_WIN, Events.BET_REFUND, Events.BET_START, Events.BET_FAILED, Events.BET_LOSE, Events.CHAT_MENTION],       # Only these events will be sent to the chat
+        )
     ),
     streamer_settings=streamer_settings,
     enable_analytics=True
