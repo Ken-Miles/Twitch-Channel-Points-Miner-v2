@@ -101,10 +101,22 @@ with open('channels.txt') as f:
         # Remove anything after a '#' and strip whitespace
         cleaned_line = line.split('#')[0].strip()
         if cleaned_line:  # Ensure line isn't empty
-            streamers.append(cleaned_line)
+            streamers.append(cleaned_line.lower().strip())
 
-if twitch_miner.username.lower() == "ken_miles9067" and 'caseoh_' in streamers:
-    streamers.remove('caseoh_')
+
+bans = {
+    'caseoh_': ['ken_miles9067', 'formeraidensassistant'],
+}
+
+for channel, banned_users in bans.items():
+    if channel.lower() not in streamers:
+        continue
+
+    if twitch_miner.username.lower() in banned_users:
+        streamers.remove(channel)
+
+if twitch_miner.username.lower() in streamers:
+    streamers.remove(twitch_miner.username.lower())
 
 streamer_list = [Streamer(x, settings=streamer_settings) for x in streamers]
 
