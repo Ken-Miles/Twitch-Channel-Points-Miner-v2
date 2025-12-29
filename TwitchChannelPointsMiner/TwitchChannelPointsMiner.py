@@ -295,6 +295,7 @@ class TwitchChannelPointsMiner:
             for streamer in self.streamers:
                 time.sleep(random.uniform(0.3, 0.7))
                 try:
+                    self.twitch.follow_user(streamer)
                     self.twitch.load_channel_points_context(streamer)
                     self.twitch.check_streamer_online(streamer)
                     # self.twitch.viewer_is_mod(streamer)
