@@ -12,6 +12,9 @@ from TwitchChannelPointsMiner.classes.Settings import Priority, Events, Follower
 from TwitchChannelPointsMiner.classes.entities.Bet import Strategy, BetSettings, Condition, OutcomeKeys, FilterCondition, DelayMode
 from TwitchChannelPointsMiner.classes.entities.Streamer import Streamer, StreamerSettings
 import environ
+import os
+
+os.environ["TCM_SESSION_NAME"] = os.environ.get("current_user", "default")
 
 bet_settings = BetSettings(
     strategy=Strategy.SMART_MONEY,            # Choose you strategy!
@@ -116,7 +119,7 @@ twitch_miner.analytics(host="127.0.0.1", port=int(port), refresh=5, days_ago=7) 
 
 streamers = []
 
-if use_followers_list:
+if not use_followers_list:
     with open('channels.txt') as f:
         for line in f:
             # Remove anything after a '#' and strip whitespace
@@ -148,7 +151,7 @@ streamer_list = [Streamer(x, settings=streamer_settings) for x in streamers]
 #         Streamer(x, settings=streamer_settings)
 #     )
 
-if use_followers_list:
+if not use_followers_list:
     twitch_miner.mine(
         streamer_list,
     )
