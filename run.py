@@ -63,6 +63,7 @@ port: int = env('port', cast=int, default=4550) # type: ignore
 discord_webhook: Optional[str] = env('discord_webhook', default=None) # type: ignore
 
 do_predictions = env('do_predictions', default='true').lower() in ('true', '1', 'yes')  # type: ignore
+
 if do_predictions:
     streamer_settings = streamer_settings
 else:
@@ -70,6 +71,7 @@ else:
 
 # whether to use my custom list or the followers list
 use_followers_list = env('use_followers_list', default='true').lower() in ('true', '1', 'yes')  # type: ignore
+use_descending_order = env('use_descending_order', default='false').lower() in ('true', '1', 'yes')  # type: ignore
 
 twitch_miner = TwitchChannelPointsMiner(
     username=str(user),
@@ -159,5 +161,5 @@ if not use_followers_list:
 else:
     twitch_miner.mine(
         followers=True,
-        followers_order=FollowersOrder.ASC,
+        followers_order=FollowersOrder.DESC if use_descending_order else FollowersOrder.ASC
     )
