@@ -37,7 +37,7 @@ streamer_settings = StreamerSettings(
         follow_raid=True,                       # Follow raid to obtain more points
         claim_drops=True,                       # We can't filter rewards base on stream. Set to False for skip viewing counter increase and you will never obtain a drop reward from this script. Issue #21
         watch_streak=True,                      # If a streamer go online change the priority of streamers array and catch the watch screak. Issue #11
-        chat=ChatPresence.ALWAYS,               # Join irc chat to increase watch-time [ALWAYS, NEVER, ONLINE, OFFLINE]
+        chat=ChatPresence.ONLINE,               # Join irc chat to increase watch-time [ALWAYS, NEVER, ONLINE, OFFLINE]
         bet=bet_settings,
 )
 
@@ -46,7 +46,7 @@ streamer_settings_no_bet = StreamerSettings(
         follow_raid=True,                       # Follow raid to obtain more points
         claim_drops=True,                       # We can't filter rewards base on stream. Set to False for skip viewing counter increase and you will never obtain a drop reward from this script. Issue #21
         watch_streak=True,                      # If a streamer go online change the priority of streamers array and catch the watch screak. Issue #11
-        chat=ChatPresence.ALWAYS,               # Join irc chat to increase watch-time [ALWAYS, NEVER, ONLINE, OFFLINE]
+        chat=ChatPresence.ONLINE,               # Join irc chat to increase watch-time [ALWAYS, NEVER, ONLINE, OFFLINE]
 )
 
 env = environ.Env(
@@ -103,7 +103,7 @@ twitch_miner = TwitchChannelPointsMiner(
         discord=Discord(
             webhook_api=str(discord_webhook),  # Discord Webhook URL
             events=[Events.STREAMER_ONLINE, Events.STREAMER_OFFLINE, Events.BET_WIN, Events.BET_REFUND, Events.BET_START, Events.BET_FAILED, Events.BET_LOSE, Events.CHAT_MENTION, 
-            Events.GAIN_FOR_WATCH_STREAK, Events.GAIN_FOR_WATCH, Events.GAIN_FOR_WATCH, Events.GAIN_FOR_RAID],       # Only these events will be sent to the chat
+            Events.GAIN_FOR_WATCH_STREAK, Events.GAIN_FOR_WATCH, Events.GAIN_FOR_RAID, Events.DROP_CLAIM, Events.DROP_STATUS],       # Only these events will be sent to the chat
         )
     ),
     streamer_settings=streamer_settings,
@@ -128,7 +128,7 @@ if not use_followers_list:
             # Remove anything after a '#' and strip whitespace
             cleaned_line = line.split('#')[0].strip()
             if cleaned_line:  # Ensure line isn't empty
-                streamers.append(cleaned_line.lower().strip())
+                streamers.append(cleaned_line.lower())
 
 
 bans = {
@@ -144,6 +144,9 @@ for channel, banned_users in bans.items():
 
 if twitch_miner.username.lower() in streamers:
     streamers.remove(twitch_miner.username.lower())
+
+if not use_descending_order:
+    streamers = reversed(streamers)
 
 streamer_list = [Streamer(x, settings=streamer_settings) for x in streamers]
 
