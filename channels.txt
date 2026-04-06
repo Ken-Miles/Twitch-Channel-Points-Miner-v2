@@ -7,6 +7,7 @@ oopsimlia
 
 # active streamers
 jynxzi
+nasa
 hivise
 thesketchreal
 
@@ -50,6 +51,8 @@ ubisoft
 xbox
 rainbow6
 
+anarable
+saganmcfly
 nedluke
 carteronhere
 ricci
@@ -138,6 +141,7 @@ sweatyclap_
 itsspoit
 lotussaur_
 sterling_cole
+iranianmobsters
 tdiippy
 findingbrent
 astronaka
