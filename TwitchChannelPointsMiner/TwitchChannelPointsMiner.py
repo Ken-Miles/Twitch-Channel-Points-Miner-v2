@@ -3,6 +3,7 @@
 import logging
 import os
 import random
+import shutil
 import signal
 import sys
 import threading
@@ -119,13 +120,10 @@ class TwitchChannelPointsMiner:
         # Analytics switch
         Settings.enable_analytics = enable_analytics
 
-        if enable_analytics is True:
-            Settings.analytics_path = os.path.join(
-                Path().absolute(), "analytics", username
-            )
-            Path(Settings.analytics_path).mkdir(parents=True, exist_ok=True)
-
         self.username = username
+
+        if enable_analytics is True:
+            self.__set_analytics_path()
 
         # Set as global config
         Settings.logger = logger_settings
@@ -175,6 +173,32 @@ class TwitchChannelPointsMiner:
 
         for sign in [signal.SIGINT, signal.SIGSEGV, signal.SIGTERM]:
             signal.signal(sign, self.end)
+
+    def __set_analytics_path(self, user_id=None):
+        analytics_root = os.path.join(Path().absolute(), "analytics")
+        previous_path = os.path.join(analytics_root, self.username)
+        folder_name = str(user_id) if user_id else self.username
+        target_path = os.path.join(analytics_root, folder_name)
+
+        if user_id:
+            Settings.analytics_user_id = str(user_id)
+
+        if user_id and os.path.isdir(previous_path) and previous_path != target_path:
+            Path(target_path).mkdir(parents=True, exist_ok=True)
+            for item in os.listdir(previous_path):
+                source = os.path.join(previous_path, item)
+                destination = os.path.join(target_path, item)
+
+                if os.path.exists(destination):
+                    continue
+
+                shutil.move(source, destination)
+
+            if not os.listdir(previous_path):
+                os.rmdir(previous_path)
+
+        Settings.analytics_path = target_path
+        Path(Settings.analytics_path).mkdir(parents=True, exist_ok=True)
 
     def analytics(
         self,
@@ -227,6 +251,10 @@ class TwitchChannelPointsMiner:
             self.start_datetime = datetime.now()
 
             self.twitch.login()
+            user_id = self.twitch.twitch_login.get_user_id()
+
+            if Settings.enable_analytics is True:
+                self.__set_analytics_path(user_id)
 
             if self.claim_drops_startup is True:
                 self.twitch.claim_all_drops_from_inventory()
@@ -342,7 +370,6 @@ class TwitchChannelPointsMiner:
             )
 
             # Subscribe to community-points-user. Get update for points spent or gains
-            user_id = self.twitch.twitch_login.get_user_id()
             # print(f"!!!!!!!!!!!!!! USER_ID: {user_id}")
 
             # Fixes 'ERR_BADAUTH'

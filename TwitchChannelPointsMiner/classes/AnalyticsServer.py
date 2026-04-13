@@ -15,8 +15,24 @@ cli.show_server_banner = lambda *_: None
 logger = logging.getLogger(__name__)
 
 
+def get_analytics_path():
+    analytics_root = os.path.join(Path().absolute(), "analytics")
+    user_id = getattr(Settings, "analytics_user_id", None)
+
+    if user_id:
+        user_path = os.path.join(analytics_root, str(user_id))
+        if os.path.isdir(user_path):
+            return user_path
+
+    path = getattr(Settings, "analytics_path", analytics_root)
+    return path if os.path.isdir(path) else analytics_root
+
+
 def streamers_available():
-    path = Settings.analytics_path
+    path = get_analytics_path()
+    if not os.path.isdir(path):
+        return []
+
     return [
         f
         for f in os.listdir(path)
@@ -106,7 +122,7 @@ def read_json(streamer, return_response=True):
     start_date = request.args.get("startDate", type=str)
     end_date = request.args.get("endDate", type=str)
 
-    path = Settings.analytics_path
+    path = get_analytics_path()
     streamer = streamer if streamer.endswith(".json") else f"{streamer}.json"
 
     # Check if the file exists before attempting to read it
