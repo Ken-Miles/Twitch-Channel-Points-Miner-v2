@@ -1,13 +1,12 @@
 # important
 ken_miles9067
 peaktick99
-lilthiccbitty
 itsmundanemike
+lilthiccbitty
 oopsimlia
 
 # active streamers
 jynxzi
-nasa
 hivise
 thesketchreal
 
@@ -50,11 +49,15 @@ joe_bartolozzi
 ubisoft
 xbox
 rainbow6
+chess
+nasa
 
 anarable
 saganmcfly
-nedluke
+GothamChess
 carteronhere
+nedluke
+mooda
 ricci
 skyte
 mingo
@@ -64,7 +67,6 @@ frankystrings
 itisanita
 whatifjulia
 nickeh30
-piratesoftware
 flight23white
 kaicenat
 ishowspeed
@@ -194,3 +196,4 @@ speedrungrandtheftauto
 
 # banned
 notmirandamae
+piratesoftware
